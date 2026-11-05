@@ -338,8 +338,10 @@ h2.title em{color:var(--rose);font-style:italic}
 .note:hover{border-color:var(--gold)}
 .note .nh{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(243,220,162,.15)}
 .note .nh svg{width:18px;height:18px;fill:var(--gold-soft)}
-.note .nl{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-soft)}
-.note .nt{display:none;font-family:var(--f-display);font-size:23px;line-height:1.3;font-weight:500}
+.note .nl{font-family:var(--f-display);font-size:23px;line-height:1.2;font-weight:600;color:var(--cream)}
+.note .nl small{display:block;font-family:var(--f-body);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-soft);margin-top:4px}
+.note .nt b{display:block;font-style:italic;color:var(--rose-deep);font-weight:600;margin-bottom:4px}
+.note .nt{display:none;font-family:var(--f-display);font-size:21px;line-height:1.35;font-weight:500}
 .note.open{background:var(--paper);color:var(--ink);border-color:transparent;cursor:default;box-shadow:0 18px 30px -18px rgba(0,0,0,.85)}
 .note.open:nth-child(odd){transform:rotate(-.8deg)} .note.open:nth-child(even){transform:rotate(.8deg)}
 .note.open .nh{background:rgba(200,90,126,.14)} .note.open .nh svg{fill:var(--rose-deep)}
@@ -425,19 +427,21 @@ var DEFAULT_CONFIG = {
       hints: ["Hint: the day I was born.", "Day first, then month."], success: "Unlocked. Now, let’s celebrate you." }
   ],
   /* "Things I love about you": DRAFT lines for Monem to rewrite in his own words. Empty lines are skipped. */
+  /* "Things I love about you", in Monem's words. Title first, then a full stop, then the note. Empty lines are skipped. */
   loves: [
-    "The way you make an ordinary day feel like home.",
-    "Your smile. It still gets me, every single time.",
-    "How much you care for the people around you, often before yourself.",
-    "That you are my calm and my best friend at the same time.",
-    "That with you, I keep becoming a better version of me."
+    "Your playful side. Your silliness, your little mischief and your sweet requests bring laughter and joy into my every day.",
+    "The love in your everyday care. From packing my lunch to thinking about what I’ll eat and when, you notice the little things. Your thoughtfulness makes me feel loved every day.",
+    "The way you encourage me. You appreciate my little efforts, however they turn out. You make me feel special and give me the confidence to try new things.",
+    "The joy of being together. I love sharing little stories and chatting with you. Whether we’re at home or exploring somewhere new, just being with you makes it special.",
+    "The home you help us create. I love how you arrange our home with so much care, filling it with warmth and love.",
+    "Your happiness in the little things. Even the smallest things can make you happy, and seeing your smile makes those moments special for me too."
   ],
   family: [
     { id: "sister",  relation: "Your sister",  name: "", video: "", poster: "", captions: "" },
     { id: "brother", relation: "Your brother", name: "", video: "", poster: "", captions: "" }
   ],
   letter: {
-    text: "My love,\n\nHappy birthday. Today is all about you, so I made you a little world you can open, play with and keep.\n\nI hope you know how loved you are. Not only today, but on the ordinary days too: the quiet mornings, the busy evenings, and all the small moments in between.\n\nFor the year ahead, I wish you good health, real rest, and more reasons to smile than you can count. I hope it brings you closer to every dream you are carrying, and I will be right beside you for every step of it.\n\nThank you for being you. I am so lucky that I get to celebrate you.\n\nWith all my love,"
+    text: "My love,\n\nHappy birthday. Today is all about you, so I made you a little world you can open, play with and keep.\n\nHaving you by my side is the greatest gift I have. You stand beside me through every stage of our lives, and with you, even the difficult days feel a little easier.\n\nI love the way you dream about our future. It makes me even more determined to bring those dreams to life, together with you.\n\nFor the year ahead, I wish you good health, real rest, and more reasons to smile than you can count. May all the little things that make you happy keep finding their way to you.\n\nThank you for being you. I am so lucky that I get to celebrate you.\n\nWith all my love,"
   },
   album: [                           // more photos of her; caption is optional, your own words
     { src: "", caption: "", alt: "" }, { src: "", caption: "", alt: "" }, { src: "", caption: "", alt: "" }, { src: "", caption: "", alt: "" },
@@ -662,9 +666,9 @@ function buildScenes(){
   var s = ['gift'];
   if (activeLocks().length) s.push('lock');
   s.push('wish', 'puzzle', 'match');
-  if (lovesList().length) s.push('loves');
   if (familyVideos().length) s.push('family');
   if (albumPhotos().length >= 2) s.push('album');
+  if (lovesList().length) s.push('loves');
   s.push('letter');
   return s;
 }
@@ -1149,6 +1153,7 @@ RENDER.wish = function(el){
 };
 
 RENDER.loves = function(el){
+  function parts(t){ var k = t.indexOf('. '); return (k > 0 && k < 60) ? {title: t.slice(0, k), body: t.slice(k + 2)} : {title: '', body: t}; }
   var L = lovesList(), opened = 0;
   el.innerHTML =
     '<p class="eyebrow">Little notes</p>' +
@@ -1156,7 +1161,8 @@ RENDER.loves = function(el){
     '<p class="howto">Tap each note to open it.</p>' +
     '<div class="notes">' + L.map(function(t, i){
       return '<button type="button" class="note" data-i="' + i + '" aria-expanded="false"><span class="nh" aria-hidden="true">' + HEART + '</span>' +
-        '<span class="nl">Note ' + (i + 1) + ' · tap to open</span><span class="nt">' + esc(t) + '</span></button>';
+        '<span class="nl">' + (parts(t).title ? esc(parts(t).title) : 'Note ' + (i + 1)) + '<small>Tap to open</small></span>' +
+        '<span class="nt">' + (parts(t).title ? '<b>' + esc(parts(t).title) + '</b>' : '') + esc(parts(t).body) + '</span></button>';
     }).join('') + '</div>' +
     '<p class="status" id="lstatus" aria-live="polite">0 of ' + L.length + ' opened</p>' +
     '<div class="row"><button type="button" class="btn ghost small" id="lAll">Open all</button></div>';
@@ -1291,7 +1297,7 @@ function checklist(){
     ['Couple photo (puzzle)', cfg.photos.couple.src, false],
     ['Album photos (' + n + ' of 8)', n, false],
     ['Lock codes (' + locks + ' active)', locks, false],
-    ['“Things I love about you” (' + loves + ' lines, drafts until you rewrite them)', loves, false],
+    ['“Things I love about you” (' + loves + ' notes)', loves, false],
     ['Your voice recording', cfg.voice.src, false],
     ['Own music file (built-in music used otherwise)', cfg.music.src, false]
   ];
@@ -1334,7 +1340,7 @@ function renderEditor(){
             field('locks.' + i + '.success', 'Message when it opens') + '</div>';
         }).join('') +
       '</section>' +
-      '<section><h2>Things I love about you</h2><p class="ed-hint"><b class="draft">These are starter drafts.</b> Rewrite them in your own words. Empty lines are skipped; clear all five to hide the page.</p>' +
+      '<section><h2>Things I love about you</h2><p class="ed-hint">Write the title, a full stop, then the note (e.g. “Your playful side. Your silliness…”). Empty lines are skipped; clear them all to hide the page.</p>' +
         cfg.loves.map(function(_, i){ return field('loves.' + i, 'Note ' + (i + 1)); }).join('') +
       '</section>' +
       '<section><h2>Your letter</h2><p class="ed-hint">Leave a blank line between paragraphs. Your name is added as the signature.</p>' +
